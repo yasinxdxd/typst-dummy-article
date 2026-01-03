@@ -6,10 +6,12 @@
 #import algorithmic: style-algorithm, algorithm-figure
 #show: style-algorithm
 
+#set page(numbering: "1")
+
 #show: ieee.with(
   title: [Load Balancing in Edge Computing with Random Task],
   abstract: [
-    This paper presents a novel neuro-guided algorithm selection approach for load balancing in edge computing environments. We propose a deep learning-based system that dynamically selects optimal load balancing algorithms based on real-time server metrics and task characteristics. Our experimental results demonstrate a 34% improvement in task completion time and 27% reduction in energy consumption compared to traditional static load balancing methods. The proposed system achieves 92.3% accuracy in algorithm selection across diverse workload scenarios.
+    This paper presents a novel neuro-guided algorithm selection approach for load balancing in edge computing environments. We propose a deep learning-based system that dynamically selects optimal load balancing algorithm from algorithm space based on real-time server metrics and task features. Comparing our experimental results with traditional methods, we were able to reduce energy consumption by 7% and improve task completion time by 34%. Our proposed system achieves 92.3% accuracy in algorithm selection across different scenarios.
   ],
   authors: (
     (
@@ -20,7 +22,7 @@
       email: "myyasar2001@gmail.com"
     ),
   ),
-  index-terms: ("Load Balancing", "Cloud", "Deep Learning", "Edge Computing", "Algorithm Selection"),
+  index-terms: ("Load Balancing", "Neuro-guided Algorithms", "Edge Computing", "Deep Learning", "Algorithm Selection", "Cloud"),
   bibliography: bibliography("refs.bib"),
   figure-supplement: [Fig.],
 )
@@ -75,7 +77,7 @@ Eventhough Algorithm Selection is used in very different research areas our nove
 
 == Network Architecture
 
-Our system consists of $N$ edge servers denoted as $E = {E_0, E_1, ..., E_(N-1)}$ where $E_0$ represents the base edge server that receives initial task requests. Each edge server $E_i$ is characterized by its computational capacity $C_i$, current load $L_i$, network latency $lambda_i$, and available memory $M_i$. The task arrival follows a Poisson @poisson process with rate $lambda$ and task sizes are exponentially distributed with mean $1/mu$.
+Our system consists of $N$ edge servers denoted as $E = {E_0, E_1, ..., E_(N-1)}$ where $E_0$ represents the base edge server that receives initial task requests. Computational capacity $C_i$, current load $L_i$, network latency $lambda_i$, and available memory $M_i$ are the characteristics of each edge server $E_i$. Task sizes are exponentially distributed with mean $1/mu$, and task arrivals follow a Poisson @poisson process with rate $lambda$.
 
 The system operates in discrete time slots $t in {0, 1, 2, ...}$ where at each time slot, the base server receives tasks and must decide on both the target edge server and the load balancing algorithm to employ. The decision is made by our neural network model which takes as input the current state vector $S_t$ containing all relevant server metrics.
 
@@ -83,7 +85,7 @@ The system operates in discrete time slots $t in {0, 1, 2, ...}$ where at each t
 
 == Neuro-guided Algorithm Selection
 
-The first step of the complete pipeline for our algorithm selection system is presented in @algorithm heavily inspired by @Kotthoff2016AlgorithmSelection. The system first collects real-time metrics from all edge servers, preprocesses these features through normalization and outlier detection, and then feeds them into our neural network for final algorithm selection.
+The first step of the complete pipeline for our algorithm selection system is presented in @algorithm heavily inspired by @Kotthoff2016AlgorithmSelection. The system first collects real-time metrics from all edge servers, preprocesses these features through normalization, and then feeds them into our neural network for final algorithm selection.
 
 #algorithm-figure(
   "Algorithm Selection Pipeline",
@@ -250,13 +252,6 @@ $
 
 where $Q_"max"$ is the maximum allowable queue length to ensure bounded waiting time.
 
-*Energy Budget Constraint:*
-$
-sum_(i=0)^(N-1) P_i dot t <= E_"budget"
-$
-
-where $P_i$ is the power consumption of server $i$, $t$ is the time period, and $E_"budget"$ is the total energy budget.
-
 *Latency Constraint:*
 $
 T_"completion"^j <= T_"deadline"^j, quad forall j
@@ -264,40 +259,20 @@ $
 
 where $T_"completion"^j$ is the actual completion time and $T_"deadline"^j$ is the deadline for task $j$.
 
-// #v(8em)
 
-// == Mathematical Model
-
-// Let $x_(i j)$ be a binary variable indicating whether task $j$ is assigned to server $i$. Let $a_(i k)$ be a binary variable indicating whether algorithm $k$ is selected for server $i$. The formal optimization problem is:
-
-// $
-// min_(x,a) quad &sum_(j=1)^M sum_(i=0)^(N-1) x_(i j) dot (T_"proc"^(i j) + T_"wait"^(i j) + T_"comm"^(i j)) + \ phi &sum_(i=0)^(N-1) P_i dot t_i
-// $
-
-// subject to:
-
-// $
-// sum_(i=0)^(N-1) x_(i j) &= 1, quad forall j \
-// sum_(k=1)^8 a_(i k) &<= 1, quad forall i \
-// sum_(j: x_(i j)=1) s_j &<= C_i, quad forall i \
-// x_(i j), a_(i k) &in {0, 1}
-// $
-
-// where $T_"proc"^(i j)$ is processing time, $T_"wait"^(i j)$ is waiting time, $T_"comm"^(i j)$ is communication time, $s_j$ is the size of task $j$, and $phi$ is the energy cost factor.
-
-#v(2em)
+#colbreak()
 
 = Methodology
 
 == Simulation Environment
 
-We implemented our system using Python 3.10 with TensorFlow 2.8 for neural network implementation and CloudSim 4.0 for edge computing simulation. The simulation environment consists of 20 heterogeneous edge servers with varying computational capacities ranging from 2.4 GHz to 4.8 GHz, memory from 8 GB to 64 GB, and network latencies from 5 ms to 120 ms.
+We implemented our system using Python 3.10 with TensorFlow 2.8 for neural network implementation and CloudSim 4.0 for edge computing simulation. Our simulation environment consists of 20 edge servers with varying computational capacities ranging from 2.4 GHz to 3.8 GHz, memory from 2 GB to 16 GB, and network latencies from 15 ms to 120 ms.
 
-== Training Procedure
+== Training
 
-The neural network was trained over 500 epochs with a batch size of 128 using the Adam optimizer with learning rate $eta = 0.001$. We employed a learning rate decay schedule where the rate is multiplied by 0.95 every 50 epochs. The dataset was split into 70% training, 15% validation, and 15% testing sets.
+The neural network was trained over 1000 epochs with a batch size of 128 using the Adam optimizer with learning rate $eta = 0.001$. We also select a learning rate where the rate is multiplied by 0.96 every 50 epochs inspired by @Barakbayeva2023. The dataset was split into 50% training, 25% validation, and 25% testing sets.
 
-Data augmentation was performed by introducing Gaussian noise ($sigma = 0.05$) to input features and randomly dropping 10% of features during training to improve robustness. Early stopping was implemented with patience of 30 epochs based on validation loss.
+Data augmentation was performed by introducing Gaussian noise ($sigma = 0.05$) to input features and with *dropping layers* where it randomly drops 10% of features during training to improve robustness. Early stopping was implemented with patience of 30 epochs based on validation loss.
 
 == Baseline Comparisons
 
@@ -318,7 +293,7 @@ Performance is measured using:
 - 95th percentile latency
 
 
-#v(16em)
+#colbreak()
 = Results and Performance Evaluation
 
 == Overall Performance
@@ -340,7 +315,7 @@ Our proposed neuro-guided algorithm selection system achieves significant improv
   caption: "Performance comparison across different methods"
 )<table3>
 
-Our method achieves 34% improvement in average completion time and 27% reduction in energy consumption compared to the static Round Robin approach, while maintaining better load balance across servers as indicated by the lowest utilization variance.
+Our method achieves 34% improvement in average completion time and 7% reduction in energy consumption compared to the static Round Robin approach, while maintaining better load balance across servers as indicated by the lowest utilization variance.
 
 
 == Scalability Analysis
@@ -359,4 +334,6 @@ We evaluated the scalability of our proposed system by varying the number of edg
   caption: "System performance under different network scales"
 )<table4>
 
-The results show that our approach maintains consistent performance characteristics across different deployment scales, making it suitable for both small-scale edge deployments and large distributed edge computing infrastructures. The throughput scales linearly with the number of servers, indicating efficient task distribution without bottlenecks at the decision-making layer.
+The findings show that our method is suitable for both small scale edge computing deployment and large distributed edge computing infrastructures, as it maintains the same performance characteristics at different scales of deployment. At the decision-making level, there are no bottlenecks and throughput is linearly scaled by the number of servers.
+
+#pagebreak()
